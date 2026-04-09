@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Saúde em rota</string>
+    <string name="home_map">Mapa</string>
+    <string name="menu_questions">Questionário</string>
+    <string name="menu_stars">Favoritos</string>
+    <string name="menu_historic">Histórico</string>
+    <string name="menu_search">Pesquisar</string>
+</resources>
