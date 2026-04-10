@@ -19,7 +19,12 @@
         android:label="@string/home_map"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:layout="@layout/fragment_map"/>
+        tools:layout="@layout/fragment_map">
+    <action
+        android:id="@+id/action_nav_map_to_usfDetailFragment"
+        app:destination="@id/usfDetailFragment"/>
+
+    </fragment>
 
     <fragment
         android:id="@+id/nav_historic"
@@ -28,4 +33,16 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:layout="@layout/fragment_historic" />
+
+    <fragment
+        android:id="@+id/usfDetailFragment"
+        android:name="dev.aira.saudeEmRota.ui.usf.UsfDetailFragment"
+        android:label="Detalhes da USF"
+        tools:layout="@layout/fragment_usf_detail">
+
+        <argument
+            android:name="usfId"
+            app:argType="string"/>
+
+    </fragment>
 </navigation>

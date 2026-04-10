@@ -3,7 +3,7 @@ package dev.aira.saudeEmRota
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import com.google.android.material.snackbar.Snackbar
+import androidx.activity.viewModels
 import com.google.android.material.navigation.NavigationView
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
@@ -11,21 +11,22 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import androidx.appcompat.app.AppCompatActivity
 import dev.aira.saudeEmRota.databinding.ActivityMainBinding
+import dev.aira.saudeEmRota.ui.map.MapViewModel
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
 
+    private val mapViewModel: MapViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.appBarMain.bntCreate?.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null)
-                .setAnchorView(R.id.bnt_create).show()
+        binding.appBarMain.bntCreate?.setOnClickListener {
+            mapViewModel.solicitarPin()
         }
 
         val navHostFragment =
