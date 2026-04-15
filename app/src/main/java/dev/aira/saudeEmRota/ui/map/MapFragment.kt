@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat
 import com.google.android.gms.location.LocationServices
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
@@ -31,6 +32,7 @@ import dev.aira.saudeEmRota.db.UsfRepository
 import dev.aira.saudeEmRota.model.Usf
 import kotlinx.coroutines.launch
 import androidx.core.net.toUri
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 
 class MapFragment  : Fragment(), OnMapReadyCallback {
 
@@ -38,6 +40,11 @@ class MapFragment  : Fragment(), OnMapReadyCallback {
     private lateinit var binding: FragmentMapBinding
 
     private val usfRepository = UsfRepository()
+
+    private var listaUsfs: List<Usf> = emptyList()
+
+    private var modoCriacao = false
+    private var markerTemp: Marker? = null
 
     private val mapViewModel: MapViewModel by activityViewModels()
 
@@ -63,11 +70,8 @@ class MapFragment  : Fragment(), OnMapReadyCallback {
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
-        mapViewModel.adicionarPin.observe(viewLifecycleOwner) { solicitar ->
-            if (solicitar == true && ::mMap.isInitialized) {
-                adicionarPin()
-                mapViewModel.pinAdicionado()
-            }
+        mapViewModel.busca.observe(viewLifecycleOwner) { query ->
+            buscarEIrParaUsf(query)
         }
     }
 
@@ -114,8 +118,9 @@ class MapFragment  : Fragment(), OnMapReadyCallback {
     private fun carregarPinsUsfs() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                val usfs = usfRepository.getUsfs()
-                usfs.forEach { usf ->
+                listaUsfs = usfRepository.getUsfs()
+
+                listaUsfs.forEach { usf ->
                     mMap.addMarker(
                         MarkerOptions()
                             .position(LatLng(usf.latitude, usf.longitude))
@@ -123,9 +128,9 @@ class MapFragment  : Fragment(), OnMapReadyCallback {
                             .snippet(usf.endereco)
                     )?.tag = usf
                 }
+
             } catch (e: Exception) {
                 Log.e("MapFragment", "Erro ao carregar USFs", e)
-                Toast.makeText(requireContext(), "Erro: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -172,12 +177,112 @@ class MapFragment  : Fragment(), OnMapReadyCallback {
         }
     }
 
-    private fun adicionarPin() {
+    private fun buscarEIrParaUsf(query: String) {
+        val usfEncontrada = listaUsfs.find {
+            it.nomeOficial.contains(query, ignoreCase = true)
+                    || it.id.contains(query, ignoreCase = true)
+        }
+
+        if (usfEncontrada != null) {
+            val latLng = LatLng(usfEncontrada.latitude, usfEncontrada.longitude)
+
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16f))
+
+            val marker = mMap.addMarker(
+                MarkerOptions()
+                    .position(latLng)
+                    .title(usfEncontrada.nomeOficial)
+            )
+            marker?.tag = usfEncontrada
+
+            marker?.showInfoWindow()
+            marker?.let { mostrarOpcoes(it) }
+
+        } else {
+            Toast.makeText(requireContext(), "USF não encontrada", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    fun ativarModoCriacao() {
+        modoCriacao = true
+
+        val centro = mMap.cameraPosition.target
+
+        markerTemp?.remove()
+
+        markerTemp = mMap.addMarker(
+            MarkerOptions()
+                .position(centro)
+                .title("Arraste para definir local")
+                .draggable(true)
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))
+        )
+
+        Toast.makeText(requireContext(),
+            "Arraste o pin para o local desejado", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun mostrarDialogCriarUsf(latLng: LatLng) {
+        val input = EditText(requireContext()).apply {
+            hint = "Nome da unidade"
+        }
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Nova Unidade de Saúde")
+            .setMessage("Digite o nome da unidade:")
+            .setView(input)
+            .setPositiveButton("Criar") { _, _ ->
+                val nome = input.text.toString().trim()
+
+                if (nome.isNotEmpty()) {
+                    criarUsfUsuario(nome, latLng)
+                }
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    private fun criarUsfUsuario(nome: String, latLng: LatLng) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val usf = Usf(
+                    nomeOficial = nome,
+                    numeroUS = "USER_${System.currentTimeMillis()}",
+                    distrito = 0,
+                    cnes = "",
+                    endereco = "Não informado",
+                    bairro = "Não informado",
+                    fone = "",
+                    especialidade = "",
+                    horario = "",
+                    latitude = latLng.latitude,
+                    longitude = latLng.longitude,
+                    ativa = true,
+                    chaveRelacao = nome.lowercase(),
+
+                    criadaPorUsuario = true,
+                    usuarioId = "user_mock",
+                    aprovada = false,
+                    criadaEm = System.currentTimeMillis()
+                )
+                val idGerado = usfRepository.criarUsf(usf)
+                val usfComId = usf.copy(id = idGerado)
+                adicionarPin(usfComId)
+
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(),
+                    "Erro ao criar unidade", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun adicionarPin(usf: Usf) {
         mMap.addMarker(
             MarkerOptions()
-                .position(LatLng(-8.0631, -34.8711))
-                .title("Recife")
-                .snippet("Descrição do local")
+                .position(LatLng(usf.latitude, usf.longitude))
+                .title(usf.nomeOficial)
+                .snippet("Adicionado por usuário")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
         )
     }
 }

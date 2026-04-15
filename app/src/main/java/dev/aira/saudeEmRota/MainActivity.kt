@@ -3,6 +3,7 @@ package dev.aira.saudeEmRota
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.SearchView
 import androidx.activity.viewModels
 import com.google.android.material.navigation.NavigationView
 import androidx.navigation.findNavController
@@ -10,7 +11,9 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import dev.aira.saudeEmRota.databinding.ActivityMainBinding
+import dev.aira.saudeEmRota.ui.map.MapFragment
 import dev.aira.saudeEmRota.ui.map.MapViewModel
 
 class MainActivity : AppCompatActivity() {
@@ -25,8 +28,18 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.appBarMain.bntCreate?.setOnClickListener {
-            mapViewModel.solicitarPin()
+        findViewById<FloatingActionButton>(R.id.bnt_create).setOnClickListener {
+
+            val navHostFragment = supportFragmentManager
+                .findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
+
+            val fragmentAtual = navHostFragment
+                .childFragmentManager
+                .primaryNavigationFragment
+
+            if (fragmentAtual is MapFragment) {
+                fragmentAtual.ativarModoCriacao()
+            }
         }
 
         val navHostFragment =
@@ -51,6 +64,19 @@ class MainActivity : AppCompatActivity() {
             appBarConfiguration = AppBarConfiguration(topLevelDestinations)
             it.setupWithNavController(navController)
         }
+
+        val searchView = findViewById<SearchView>(R.id.btn_search)
+
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                query?.let { mapViewModel.buscarUsf(it) }
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                return false
+            }
+        })
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

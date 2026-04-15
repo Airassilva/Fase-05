@@ -1,9 +1,110 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.recyclerview.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/recyclerview_transform"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-    tools:context=".ui.historic.HistoricFragment" />
+    android:layout_height="match_parent">
+
+    <!-- SEARCH -->
+    <androidx.appcompat.widget.SearchView
+        android:id="@+id/searchMedicamento"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:visibility="gone"
+        tools:visibility="visible"
+        app:queryHint="Buscar medicamento em todas as USFs..."
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- LISTA -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvMedicamentosQuestionario"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:padding="16dp"
+        android:clipToPadding="false"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintTop_toBottomOf="@id/searchMedicamento"
+        app:layout_constraintBottom_toTopOf="@id/btnEnviarRespostas"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- ESTADO VAZIO (fica sobre a lista) -->
+    <LinearLayout
+        android:id="@+id/layoutVazio"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="24dp"
+        android:visibility="visible"
+        tools:visibility="visible"
+        app:layout_constraintTop_toBottomOf="@id/searchMedicamento"
+        app:layout_constraintBottom_toTopOf="@id/btnEnviarRespostas"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:text="📋"
+            android:textSize="48sp"
+            android:layout_marginBottom="12dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:text="Nenhum questionário ainda"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="4dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:text="Adicione medicamentos para começar"
+            android:textSize="14sp"
+            android:textColor="@color/material_on_background_emphasis_medium"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+
+    <!-- TEXTO "NENHUM RESULTADO" -->
+    <TextView
+        android:id="@+id/tvVazio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Nenhum resultado encontrado"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/searchMedicamento"
+        app:layout_constraintBottom_toTopOf="@id/btnEnviarRespostas"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- BOTÃO ENVIAR -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnEnviarRespostas"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:text="Enviar respostas"
+        android:visibility="gone"
+        tools:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/fabAddMedicamento"/>
+
+    <!-- FAB -->
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/fabAddMedicamento"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:text="+ Adicionar medicamento"
+        android:visibility="gone"
+        tools:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

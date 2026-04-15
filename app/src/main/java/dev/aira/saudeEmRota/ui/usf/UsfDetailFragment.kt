@@ -15,6 +15,8 @@ import dev.aira.saudeEmRota.db.UsfRepository
 import dev.aira.saudeEmRota.model.Usf
 import kotlinx.coroutines.launch
 import androidx.core.net.toUri
+import androidx.navigation.fragment.findNavController
+import dev.aira.saudeEmRota.db.HistoricoManager
 
 class UsfDetailFragment : Fragment() {
 
@@ -48,6 +50,7 @@ class UsfDetailFragment : Fragment() {
     }
 
     private fun exibirUsf(usf: Usf) {
+        HistoricoManager.salvarConsulta(requireContext(), usf)
         binding.tvNome.text = usf.nomeOficial.replaceFirstChar { it.uppercase() }
         binding.tvDistrito.text = "Distrito Sanitário ${usf.distrito}"
         binding.tvEndereco.text = "📍 ${usf.endereco}"
@@ -63,6 +66,14 @@ class UsfDetailFragment : Fragment() {
             }
             startActivity(intent)
         }
+        binding.btnQuestionario.setOnClickListener {
+            val action = UsfDetailFragmentDirections
+                .actionUsfDetailToQuestions(
+                    usfId = usf.id,
+                    usfNome = usf.nomeOficial
+                )
+            findNavController().navigate(action)
+        }
         carregarMedicamentos(usf.numeroUS)
     }
 
@@ -70,6 +81,8 @@ class UsfDetailFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val medicamentos = estoqueRepository.getMedicamentosByUSF(numeroUS)
+                Log.d("TESTE", "numeroUS enviado: $numeroUS")
+                Log.d("Medicamentos", "medicamentos achados: $medicamentos")
                 val adapter = MedicamentoAdapter(medicamentos)
                 binding.rvMedicamentos.adapter = adapter
             } catch (e: Exception) {

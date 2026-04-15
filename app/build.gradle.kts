@@ -48,7 +48,7 @@ dependencies {
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.play.services.maps)
-    //implementation(platform(libs.firebase.bom))
+    implementation(libs.gson)
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.kotlinx.coroutines.play.services)
